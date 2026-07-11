@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlaceMe GD Arena — Live AI Group Discussion</title>
+  <meta name="description" content="Practice Group Discussions with live AI participants — debate, get challenged, and build confidence for your placement rounds." />
+  <link rel="stylesheet" href="/styles.css" />
+  <!-- LiveKit Client SDK from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client@2/dist/livekit-client.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     STATUS OVERLAY (loading / connecting)
+══════════════════════════════════════════════════════════════ -->
+<div id="status-overlay" class="status-overlay hidden">
+  <div class="status-spinner"></div>
+  <div id="status-text" class="status-text">Setting up your arena...</div>
+  <div id="status-subtext" class="status-subtext">Just a moment</div>
+  <div id="status-steps" class="status-steps" style="margin-top:16px;"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCREEN 1: TOPIC SELECTION & SETUP
+══════════════════════════════════════════════════════════════ -->
+<section id="screen-setup" class="active">
+  <!-- Nav -->
+  <nav class="setup-nav">
+    <div class="logo">Place<span>Me</span></div>
+    <div class="nav-badge">🎯 GD Arena Beta</div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="setup-hero">
+    <div class="hero-tag">
+      <span class="hero-tag-dot"></span>
+      Live AI Group Discussion
+    </div>
+    <h1 class="hero-title">
+      Debate. Challenge.<br />
+      <span class="highlight">Ace Your GD Round.</span>
+    </h1>
+    <p class="hero-subtitle">
+      Join a live group discussion with AI participants — each with distinct
+      personalities, real-time voice, and intelligent rebuttals.
+      Get better with every round.
+    </p>
+
+    <!-- Participant preview -->
+    <div class="participant-preview">
+      <div class="participant-card user">
+        <div class="participant-avatar">🎤</div>
+        <div class="participant-info">
+          <h4>You</h4>
+          <p>The Candidate</p>
+        </div>
+      </div>
+      <div class="participant-card mod">
+        <div class="participant-avatar">🎙️</div>
+        <div class="participant-info">
+          <h4>Kavya</h4>
+          <p>Moderator</p>
+        </div>
+      </div>
+      <div class="participant-card aarav">
+        <div class="participant-avatar">🧠</div>
+        <div class="participant-info">
+          <h4>Aarav</h4>
+          <p>Analytical Debater</p>
+        </div>
+      </div>
+      <div class="participant-card priya">
+        <div class="participant-avatar">💡</div>
+        <div class="participant-info">
+          <h4>Priya</h4>
+          <p>Human-Centered Debater</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup Form -->
+  <div class="setup-form-container">
+    <div class="form-card">
+      <!-- Topic Selection -->
+      <p class="form-section-label">Choose a Topic</p>
+      <div id="topic-tabs" class="topic-tabs">
+        <!-- Populated by JS -->
+      </div>
+      <div id="topic-grid" class="topic-grid">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Custom Topic -->
+      <p class="form-section-label" style="margin-bottom:10px;">Or Enter a Custom Topic</p>
+      <div class="custom-topic-row" style="margin-bottom:28px;">
+        <input
+          id="custom-topic-input"
+          class="input-field"
+          type="text"
+          placeholder="e.g. Should AI be regulated like pharmaceuticals?"
+        />
+      </div>
+
+      <!-- User Config -->
+      <div class="config-row">
+        <div class="form-group">
+          <label for="user-name-input">Your Name</label>
+          <input
+            id="user-name-input"
+            class="input-field"
+            type="text"
+            placeholder="e.g. Rahul"
+            value="You"
+            style="width:100%"
+          />
+        </div>
+        <div class="form-group">
+          <label for="duration-select">Session Duration</label>
+          <select id="duration-select" class="select-field">
+            <option value="300">5 minutes</option>
+            <option value="600" selected>10 minutes</option>
+            <option value="900">15 minutes</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Start CTA -->
+      <button id="start-btn" class="btn-start">
+        <span class="btn-icon">🚀</span>
+        Enter the GD Arena
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCREEN 2: LIVE GD ARENA
+══════════════════════════════════════════════════════════════ -->
+<section id="screen-arena">
+  <!-- Header -->
+  <header class="arena-header">
+    <div class="arena-logo">Place<span>Me</span></div>
+
+    <div class="arena-topic-pill">
+      <strong id="arena-topic">Topic loading...</strong>
+    </div>
+
+    <div class="arena-controls">
+      <div id="timer-display" class="timer-display">
+        <span id="timer-dot" class="timer-dot"></span>
+        <span id="timer-text">10:00</span>
+      </div>
+      <button id="btn-end" class="btn-end-session">End Session</button>
+    </div>
+  </header>
+
+  <!-- Arena Body -->
+  <div class="arena-body">
+    <!-- Participants Stage -->
+    <div class="participants-stage">
+      <!-- Phase badge -->
+      <div class="phase-badge">
+        <span class="phase-dot"></span>
+        <span id="phase-text">Opening</span>
+      </div>
+
+      <!-- Top row: AI participants -->
+      <div id="participants-row" class="participants-row">
+
+        <!-- Kavya — Moderator -->
+        <div id="bubble-moderator" class="participant-bubble moderator" style="opacity:0.5;">
+          <div class="avatar-ring-wrapper">
+            <div class="avatar-pulse-ring"></div>
+            <div class="participant-avatar-circle">
+              🎙️
+              <div class="audio-bars">
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+              </div>
+            </div>
+          </div>
+          <div class="participant-label">
+            <div class="participant-name">Kavya</div>
+            <div class="participant-role">Moderator</div>
+            <div class="speaking-badge">Speaking</div>
+          </div>
+        </div>
+
+        <!-- Aarav — Analytical Debater -->
+        <div id="bubble-aarav" class="participant-bubble aarav" style="opacity:0.5;">
+          <div class="avatar-ring-wrapper">
+            <div class="avatar-pulse-ring"></div>
+            <div class="participant-avatar-circle">
+              🧠
+              <div class="audio-bars">
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+              </div>
+            </div>
+          </div>
+          <div class="participant-label">
+            <div class="participant-name">Aarav</div>
+            <div class="participant-role">Analytical Debater</div>
+            <div class="speaking-badge">Speaking</div>
+          </div>
+        </div>
+
+        <!-- Priya — Human-Centered Debater -->
+        <div id="bubble-priya" class="participant-bubble priya" style="opacity:0.5;">
+          <div class="avatar-ring-wrapper">
+            <div class="avatar-pulse-ring"></div>
+            <div class="participant-avatar-circle">
+              💡
+              <div class="audio-bars">
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+                <div class="audio-bar"></div>
+              </div>
+            </div>
+          </div>
+          <div class="participant-label">
+            <div class="participant-name">Priya</div>
+            <div class="participant-role">Human-Centered Debater</div>
+            <div class="speaking-badge">Speaking</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User (bottom, featured) -->
+      <div id="bubble-user" class="participant-bubble user">
+        <div class="avatar-ring-wrapper" style="width:110px;height:110px;">
+          <div class="avatar-pulse-ring"></div>
+          <div class="participant-avatar-circle" style="width:96px;height:96px;font-size:36px;">
+            🎤
+            <div class="audio-bars">
+              <div class="audio-bar"></div>
+              <div class="audio-bar"></div>
+              <div class="audio-bar"></div>
+              <div class="audio-bar"></div>
+              <div class="audio-bar"></div>
+            </div>
+          </div>
+        </div>
+        <div class="participant-label">
+          <div class="participant-name" id="user-name-display">You</div>
+          <div class="participant-role">Participant</div>
+          <div class="speaking-badge">Speaking</div>
+        </div>
+      </div>
+
+      <!-- Mic controls -->
+      <div class="mic-section">
+        <button id="btn-mic" class="btn-mic" title="Toggle microphone">
+          <span>🎤</span>
+        </button>
+        <p class="mic-hint">Click to mute / unmute</p>
+      </div>
+    </div>
+
+    <!-- Transcript Panel -->
+    <div class="transcript-panel">
+      <div class="transcript-header">
+        <span class="transcript-live-dot"></span>
+        Live Transcript
+      </div>
+      <div id="transcript-body" class="transcript-body">
+        <div class="transcript-entry moderator" style="opacity:0.5;">
+          <div class="entry-speaker">Kavya</div>
+          <div class="entry-text">Waiting for all participants to join...</div>
+        </div>
+      </div>
+      <div class="transcript-footer">
+        <button class="key-points-btn" onclick="alert('Key points summary coming soon!')">
+          📊 View Key Points Summary
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCREEN 3: POST-SESSION FEEDBACK
+══════════════════════════════════════════════════════════════ -->
+<section id="screen-feedback">
+  <div class="feedback-container">
+    <div class="feedback-header">
+      <div class="feedback-trophy">🏆</div>
+      <h1 class="feedback-title">Session Complete!</h1>
+      <p class="feedback-subtitle" id="feedback-topic">Great discussion!</p>
+    </div>
+
+    <!-- Score Cards -->
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="score-value" id="feedback-speak-time">—</div>
+        <div class="score-label">Speaking Time</div>
+      </div>
+      <div class="score-card">
+        <div class="score-value" id="feedback-points">—</div>
+        <div class="score-label">Points Made</div>
+      </div>
+      <div class="score-card">
+        <div class="score-value">A</div>
+        <div class="score-label">Participation</div>
+      </div>
+    </div>
+
+    <!-- Key Tips -->
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px;margin-bottom:24px;">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;color:#f0f4ff;">💡 Quick Tips for Next Time</h3>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+        <li style="display:flex;gap:10px;font-size:14px;color:#8b9cb5;">
+          <span style="color:#34d399;flex-shrink:0;">✓</span>
+          Start strong — the opening statement sets the tone for the entire GD
+        </li>
+        <li style="display:flex;gap:10px;font-size:14px;color:#8b9cb5;">
+          <span style="color:#34d399;flex-shrink:0;">✓</span>
+          Use transitions to build on others' points rather than ignoring them
+        </li>
+        <li style="display:flex;gap:10px;font-size:14px;color:#8b9cb5;">
+          <span style="color:#34d399;flex-shrink:0;">✓</span>
+          End with a summary that synthesizes all perspectives — it shows leadership
+        </li>
+      </ul>
+    </div>
+
+    <div class="feedback-actions">
+      <button id="btn-new-session" class="btn-primary">🔄 Start New Discussion</button>
+      <button id="btn-go-home" class="btn-secondary">← Back to PlaceMe</button>
+    </div>
+  </div>
+</section>
+
+<!-- Toast notification -->
+<div id="toast" class="toast"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>
