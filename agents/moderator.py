@@ -58,7 +58,7 @@ class ModeratorAgent(Agent):
         )
 
         # Speak the opening
-        handle = self.session.say(opening, allow_interruptions=False)
+        handle = self.session.say(opening, allow_interruptions=True)
         await handle.wait_for_playout()
         
         # Signal that session is ready for debaters to start
@@ -122,7 +122,7 @@ class ModeratorAgent(Agent):
         self.session.say(
             f"And that's time! Really great discussion on '{self.topic}' today. "
             f"{self.user_name}, you made some strong points — your feedback report is being put together now. Well done, everyone!",
-            allow_interruptions=False
+            allow_interruptions=True
         )
         await self._publish_event("session_ended", {})
 
@@ -151,6 +151,12 @@ class ModeratorAgent(Agent):
         if self.context_mgr:
             try:
                 await self.context_mgr.add_utterance(self.user_name, user_text)
+                
+                # Update instructions so Moderator can acknowledge and re-queue discussion
+                ctx_prompt = await self.context_mgr.build_context_prompt("Moderator")
+                await self.update_instructions(
+                    MODERATOR_SYSTEM_PROMPT.format(context=ctx_prompt, user_name=self.user_name)
+                )
             except Exception as e:
                 logger.warning(f"Context update failed: {e}")
 
