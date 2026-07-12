@@ -58,7 +58,11 @@ class ModeratorAgent(Agent):
         )
 
         # Speak the opening
-        self.session.say(opening, allow_interruptions=False)
+        handle = self.session.say(opening, allow_interruptions=False)
+        await handle.wait_for_playout()
+        
+        # Signal that session is ready for debaters to start
+        await self._publish_event("session_ready", {})
 
         # Publish the topic to room data for UI display
         await self._publish_event("topic_set", {

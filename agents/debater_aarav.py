@@ -43,8 +43,6 @@ class AaravDebater(Agent):
 
     async def on_enter(self):
         """Aarav joins the room silently — the moderator manages intros."""
-        # Wait longer than moderator's opening to avoid speaking over it
-        await asyncio.sleep(5.0)
         logger.info("[Aarav] Joined the discussion room, ready to participate")
 
     async def on_user_turn_completed(
@@ -129,6 +127,23 @@ async def aarav_entrypoint(ctx: JobContext):
         topic=topic,
         user_name=user_name,
     )
+
+    session_ready_event = asyncio.Event()
+
+    @ctx.room.on("data_received")
+    def on_data_received(data_packet):
+        try:
+            payload = json.loads(data_packet.data.decode('utf-8'))
+            if payload.get("event") == "session_ready":
+                session_ready_event.set()
+        except Exception:
+            pass
+
+    logger.info("[Aarav] Waiting for session_ready event from Moderator...")
+    try:
+        await asyncio.wait_for(session_ready_event.wait(), timeout=45.0)
+    except asyncio.TimeoutError:
+        logger.warning("[Aarav] Timeout waiting for session_ready, starting anyway.")
 
     await session.start(agent=agent, room=ctx.room)
     # session.start() blocks until the session ends in livekit-agents >= 1.0

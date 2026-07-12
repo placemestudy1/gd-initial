@@ -16,6 +16,8 @@ Before editing any code, always read:
 
 **README.md is the source of truth for product context** unless a spec in `specs/` explicitly overrides a specific detail.
 
+**MANDATORY:** You must maintain the `lessons.md` file to log every issue faced, ensuring new learnings are carried forward.
+
 ---
 
 ## 2. Write a Spec Before You Code

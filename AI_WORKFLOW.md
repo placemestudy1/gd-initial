@@ -50,9 +50,9 @@ Follow it in order. Do not skip steps to save tokens — skipping steps causes m
 - Document the verification results in your completion summary
 
 ### Step 9 — Update lessons.md
-- If you discovered a new project rule, a bug pattern, a quirk of LiveKit or the agent SDK, or corrected a wrong assumption — write it to `lessons.md`
-- Use the template in `lessons.md`
-- Keep each lesson short and actionable
+- **MANDATORY:** If you discovered a new project rule, a bug pattern, a quirk of LiveKit or the agent SDK, or corrected a wrong assumption — you MUST write it to `lessons.md`.
+- Use the template in `lessons.md` (if applicable) and maintain an ongoing log of every issue faced.
+- Keep each lesson short and actionable.
 
 ---
 

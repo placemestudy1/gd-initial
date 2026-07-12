@@ -46,8 +46,6 @@ class PriyaDebater(Agent):
 
     async def on_enter(self):
         """Priya joins silently — waits for moderator to call on her."""
-        # Wait a bit longer than Aarav to avoid both speaking first
-        await asyncio.sleep(6.0)
         logger.info("[Priya] Joined the discussion room, ready to participate")
 
     async def on_user_turn_completed(
@@ -137,6 +135,23 @@ async def priya_entrypoint(ctx: JobContext):
         topic=topic,
         user_name=user_name,
     )
+
+    session_ready_event = asyncio.Event()
+
+    @ctx.room.on("data_received")
+    def on_data_received(data_packet):
+        try:
+            payload = json.loads(data_packet.data.decode('utf-8'))
+            if payload.get("event") == "session_ready":
+                session_ready_event.set()
+        except Exception:
+            pass
+
+    logger.info("[Priya] Waiting for session_ready event from Moderator...")
+    try:
+        await asyncio.wait_for(session_ready_event.wait(), timeout=45.0)
+    except asyncio.TimeoutError:
+        logger.warning("[Priya] Timeout waiting for session_ready, starting anyway.")
 
     await session.start(agent=agent, room=ctx.room)
     # session.start() blocks until the session ends in livekit-agents >= 1.0
